@@ -7,6 +7,7 @@ extern crate clap;
 extern crate rustc_serialize;
 
 mod corpus;
+mod bench;
 
 use std::io;
 use std::str::FromStr;
@@ -14,6 +15,8 @@ use std::str::FromStr;
 use clap::{Arg, App};
 
 use rustc_serialize::json;
+
+use bench::time_fn;
 
 enum Output {
     Json,
@@ -164,25 +167,11 @@ fn bench_corpus(corpus: &corpus::Corpus, level: i32) -> io::Result<Vec<BenchResu
     corpus.entries.iter().map(|entry| bench_entry(entry, level)).collect()
 }
 
-fn time_fn<R, F: FnOnce() -> io::Result<R>>(f: F) -> io::Result<(u64, R)> {
-    let start = time::precise_time_ns();
-
-    let r = try!(f());
-
-    let end = time::precise_time_ns();
-
-    Ok((end - start, r))
-}
 
 /// Run in-memory compression benchmark
 fn bench_entry(entry: &corpus::CorpusEntry, level: i32) -> io::Result<BenchResult> {
-    let buffer = Vec::new();
-
     let (duration, result) = try!(time_fn(|| {
-        let mut encoder = try!(zstd::Encoder::new(buffer, level));
-        let mut source = &entry.content[..];
-        try!(io::copy(&mut source, &mut encoder));
-        encoder.finish()
+        zstd::encode_all(&entry.content, level)
     }));
 
     let compressed = result.len();

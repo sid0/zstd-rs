@@ -26,3 +26,11 @@ zip = "0.1.16"
 
 [features]
 default = []
+
+[[example]]
+name = "bench_decoder"
+path = "examples/bench_decoder.rs"
+
+[[example]]
+name = "bench_encoder"
+path = "examples/bench_decoder.rs"
