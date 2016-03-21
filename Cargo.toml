@@ -21,11 +21,9 @@ version = "0.0.63"
 [dev-dependencies]
 clap = "2.2.6"
 curl = "0.2.16"
+rustc-serialize = "0.3.19"
 time = "0.1.34"
 zip = "0.1.16"
-
-[features]
-default = []
 
 [[example]]
 name = "bench_decoder"
@@ -33,4 +31,7 @@ path = "examples/bench_decoder.rs"
 
 [[example]]
 name = "bench_encoder"
-path = "examples/bench_decoder.rs"
+path = "examples/bench_encoder.rs"
+
+[features]
+default = []
