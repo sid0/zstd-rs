@@ -1,7 +1,7 @@
 use std::io::{self, Read, Write};
 use std::fs;
 
-use curl::http;
+use hyper;
 use zip;
 use zip::result::ZipResult;
 
@@ -49,15 +49,16 @@ pub fn read_corpus(dir: &str) -> io::Result<Corpus> {
 /// Downloads the corpus and store it to disk.
 pub fn fetch_corpus(dir: &str) -> ZipResult<Corpus> {
     println!("Downloading archive...");
-    let resp = http::handle()
-                   .get("http://sun.aei.polsl.pl/~sdeor/corpus/silesia.zip")
-                   .exec()
-                   .unwrap();
+    let client = hyper::Client::new();
+    let mut res = client.get("http://sun.aei.polsl.pl/~sdeor/corpus/silesia.zip").send().unwrap();
+    if res.status != hyper::Ok {
+        panic!("Download returned code {}", res.status);
+    }
 
     // Download the zip file to memory
     println!("Buffering...");
     let mut buffer = Vec::new();
-    try!(resp.get_body().read_to_end(&mut buffer));
+    try!(res.read_to_end(&mut buffer));
 
     // Extract it
     println!("Beginning extraction.");

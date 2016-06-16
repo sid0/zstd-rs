@@ -1,7 +1,7 @@
 extern crate zstd;
 
 extern crate zip;
-extern crate curl;
+extern crate hyper;
 extern crate time;
 extern crate clap;
 extern crate rustc_serialize;
