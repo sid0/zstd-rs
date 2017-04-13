@@ -16,6 +16,8 @@ travis-ci = { repository = "gyscos/zstd-rs" }
 [dependencies]
 libc = "0.2"
 zstd-sys = { path="zstd-sys", version = "1.1.5-a", default-features = false }
+futures = "*"
+tokio-io = "*"
 
 [dev-dependencies]
 clap = "2.6.0"

@@ -269,10 +269,8 @@ impl<W: Write> Encoder<W> {
         }
         Ok(())
     }
-}
 
-impl<W: Write> Write for Encoder<W> {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+    fn write_internal(&mut self, buf: &[u8]) -> io::Result<usize> {
         if self.state != EncoderState::Accepting {
             panic!("write called after try_finish attempted");
         }
@@ -323,6 +321,12 @@ impl<W: Write> Write for Encoder<W> {
 
         Ok(in_buffer.pos)
     }
+}
+
+impl<W: Write> Write for Encoder<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.write_internal(buf)
+    }
 
     fn flush(&mut self) -> io::Result<()> {
         if self.state == EncoderState::Accepting {
@@ -346,6 +350,28 @@ impl<W: Write> Write for Encoder<W> {
 
         self.write_from_offset()?;
         Ok(())
+    }
+}
+
+use futures::Poll;
+use tokio_io::AsyncWrite;
+
+impl<W: AsyncWrite> Write for Encoder<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        loop {
+            match self.write_internal(buf) {
+                Ok(n) => return Ok(n),
+                Err(ref e) if e.kind() == io::ErrorKind::Interrupted => {},
+                Err(e) => return Err(e),
+            }
+        }
+    }
+}
+
+impl<W: AsyncWrite> AsyncWrite for Encoder<W> {
+    fn shutdown(&mut self) -> Poll<(), io::Error> {
+        try_nb!(self.flush());
+        self.writer.shutdown()
     }
 }
 

@@ -24,6 +24,9 @@
 //! [zstd]: https://github.com/facebook/zstd
 #![deny(missing_docs)]
 extern crate libc;
+extern crate futures;
+#[macro_use]
+extern crate tokio_io;
 
 extern crate zstd_sys;
 
